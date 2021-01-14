@@ -13,10 +13,10 @@ all : $(NAME)
 
 $(NAME) : $(OBJ)
 	@ar rcs $(NAMA) $(OBJ)
-	gcc  $(NAMA) -o $(NAME)
+	@gcc  $(NAMA) -o $(NAME)
 	@echo 'SUCCESS!' 
 clean :
-	rm -rf $(OBJ)
+	@rm -rf $(OBJ)
 fclean : clean
 	@rm -rf $(NAME)
 	@rm -rf $(NAMA)

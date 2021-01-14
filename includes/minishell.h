@@ -44,11 +44,18 @@ typedef struct env
     struct env *prev;
 } t_env;
 
+typedef struct minishell
+{
+    t_env *env;
+    t_node *token;
+} t_minishell;
+
 void ft_putstr_fd(char *s, int fd);
 size_t ft_strlen(const char *str);
 char *ft_chr(const char *s, int c);
 char *str_get(char *rest, int i, char **line);
 int get_next_line(int fd, char **line);
+int ft_bultins(char *cmd, t_node **token, t_env *env);
 void ft_bzero(void *s, size_t n);
 void *ft_calloc(size_t count, size_t size);
 char *ft_strjoin(char const *s1, char const *s2);

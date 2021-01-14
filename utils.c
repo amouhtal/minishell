@@ -77,15 +77,17 @@ int	ft_isalpha(int c)
 int		tab_rows(t_node *token)
 {
 	int i;
+			
 
 	i = 0;
-	while (token && token->next && token->type == ARG)
+	while (token && token->type == ARG )
 	{
+		if(token->type == ARG )
 		i++;
 		token = token->next;
 	}
-	if (token && token->type == ARG)
-		i++;
+	// if ((*token) && (*token)->type == ARG)
+	// 	i++;
 	return (i);
 }
 
@@ -94,7 +96,6 @@ char	**get_args(t_node **token)
 	char **args;
 	int i;
 	int size;
-
 	size = tab_rows(*token);
 	i = 0;
 	args = (char **)malloc(sizeof(char *) * (size + 1));

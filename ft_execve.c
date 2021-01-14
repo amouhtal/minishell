@@ -140,8 +140,9 @@ int ft_execve(t_env *env, t_node **token,char *cmd)
 	char **envp;
 	// int st;
 	pid_t pid2;
-
+	
 	args = get_args(token);
+	// puts((*token)->str);
 	args = include_cmd(args, cmd);
 	pid2 = fork();
 	if (pid2 == 0)

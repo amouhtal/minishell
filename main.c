@@ -219,7 +219,7 @@ int if_buitins(char *cmd)
 	return (0);
 }
 
-int ft_bultins(char *cmd, t_node *token, t_env *env)
+int ft_bultins(char *cmd, t_node **token, t_env *env)
 {
 	int status;
 	int ret;
@@ -228,12 +228,13 @@ int ft_bultins(char *cmd, t_node *token, t_env *env)
 	if (!ft_strcmp(cmd, "echo"))
 		{
 			ret = 1;
-			ft_echo(&token);
+			ft_echo(token);
+		//	puts((*token)->str);
 		}
 	else if (!ft_strcmp(cmd, "cd"))
 		{
 			ret = 1;
-			ft_cd(env, &token);
+			ft_cd(env, token);
 		}
 	else if (!ft_strcmp(cmd, "pwd"))
 		{
@@ -253,12 +254,12 @@ int ft_bultins(char *cmd, t_node *token, t_env *env)
 	else if (!ft_strcmp(cmd, "export"))
 			{
 				ret = 1;
-				ft_exp(&env, &token);
+				ft_exp(&env, token);
 			}
 	else if (!ft_strcmp(cmd, "unset"))
 			{
 				ret = 1;
-				ft_unset(env, &token);
+				ft_unset(env, token);
 			}
 	return ret;
 }
@@ -288,64 +289,49 @@ int if_append(t_node *token)
 	}
 	return (0);
 }
-int ft_executor(t_node *first, t_env *env)
+
+int if_input(t_node *token)
 {
-	//int status;
-	t_node *token;
-	t_node *tmp;
-	int stdi;	
-	int stdo;
-	int df;
-	stdi = 0;
-	stdo = 1;
-	//t_node *tmp;
-	char *cmd;
-	//int sta;
-	int fd[2];
-	int fdd = 0;
-	int pid;
-	//int df;
-	int j = 0;
-	token = first;
-	//status = 1;
-	//prev = 0;
-	while (token->prev)
-		{
-			token = token->prev;
-		}
-	while (token)
+	while(token && (token->type == ARG || token->type == LESS))
 	{
-		if (token && token->type == CMD)
-		{
-			cmd = ft_strdup(token->str);
-			// if(token->next)
-			token = token->next;
-		}
-		if (token && if_pipe_next(token) == PIPE)
+		if (token && token->type == LESS)
+			{
+				return LESS;
+			}
+		token = token->next;
+	}
+	return (0);
+}
+void redir_pipe(t_node *token, t_env *env, char *cmd, int fd[2], int *fdd)
+{
+	int pid;
+	int df;
+	int stat;	char buff[10];
+	t_node *tmp;
+	if (token && if_pipe_next(token) == PIPE)
 		{
 			pipe(fd);
 			pid = fork();
 			if (pid == 0)
 			{
 				if (if_pipe_prev(token) == PIPE)
-				{
-					puts(token->str);
-					dup2(fdd, stdi);
-				}
+					dup2(*fdd, STDIN);
 				if (if_pipe_next(token) == PIPE)
-				{
-					dup2(fd[1], stdo);
-				}
+					dup2(fd[1], STDOUT);
 				close(fd[0]);
-				if (!ft_bultins(cmd, token, env))
+				if (!ft_bultins(cmd, &token, env))
 					ft_execve(env, &token, cmd);
 				exit(1);
 			}
-			else if (token && pid > 0)
+			else if (pid > 0)
 			{
+				while(token && token->type == ARG)
+					token = token->next;
+				waitpid(pid, &stat, 0);
+				// exit_status = WEXITSTATUS(stat);
 				wait(NULL);
 				close(fd[1]);
-				fdd = fd[0];
+				*fdd = fd[0];
 			}
 		}
 		else if (if_great_next(token))
@@ -353,79 +339,95 @@ int ft_executor(t_node *first, t_env *env)
 			tmp = token;
 			while (tmp && tmp->type != GREAT)
 				tmp = tmp->next;
-			// tmp = tmp->next;
-			//printf("====> %s\n", tmp->str);
 			while (tmp && tmp->type == GREAT)
 			{
-				if(tmp)
-					tmp = tmp->next;
-				puts("Im here2");
-				if (tmp && tmp->type == ARG)
-					tmp = tmp->next;
-				puts("Im here");
+				tmp = tmp->next;
 				df = open(tmp->str , O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+				while (tmp && tmp->type == ARG)
+					tmp = tmp->next;
 			}
-			puts("(°_!_°)");
 			dup2(df, 1);
 		}
 		else if (if_append(token))
 		{
+			close(df);
 			tmp = token;
-			//printf("%s\n",tmp->str);
-			tmp = tmp->next;
-			df = open(tmp->str , O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
+			while (tmp && tmp->type != DOUBLE_GREAT)
+				tmp = tmp->next;
+			while (tmp && tmp->type == DOUBLE_GREAT)
+			{
+				tmp = tmp->next;
+				df = open(tmp->str , O_CREAT | O_WRONLY | O_APPEND, S_IRWXU);
+				while (tmp && tmp->type == ARG)
+					tmp = tmp->next;
+			}
 			dup2(df, 1);
 		}
-		else if (token || cmd)
+		else if (if_input(token))
 		{
-			if (if_pipe_prev(token) == PIPE)
+			tmp = token;
+			while (tmp && tmp->type != LESS)
+			{
+				tmp = tmp->next;
+			}
+			while (tmp && tmp->type == LESS)
+			{
+				tmp = tmp->next;
+				df = open(tmp->str, O_RDONLY, S_IRWXU);
+				if(df == -1)
+					puts("Error");
+				while (tmp && tmp->type == ARG)
+					tmp = tmp->next;
+			}
+			dup2(df, 0);
+		}
+		// puts("ok");
+		// read(df,buff, 8);
+		// buff[9]= '\n';
+		// printf("%s\n",buff);
+		// 	close(df);
+		// exit(0);
+}
+
+int ft_executor(t_node *first, t_env *env)
+{
+	t_node *token;
+	int fd[2];
+	int fdd;
+	char *cmd;
+
+	token = first;
+	while (token->prev)
+		token = token->prev;
+	while (token)
+	{
+		if (token && token->type == CMD)
+		{
+			cmd = ft_strdup(token->str);
+			token = token->next;
+		}
+		redir_pipe(token, env, cmd, fd, &fdd);
+			//puts("here");
+		if ((cmd && if_pipe_next(token) != PIPE))
+		{
+			if (token && if_pipe_prev(token) == PIPE)
 			{
 				close(fd[1]);
-				dup2(fdd, stdi);
+				dup2(fdd, STDIN);
 				close(fdd);
 			}
-			if (!ft_bultins(cmd, token, env))
+			if (!ft_bultins(cmd, &token, env))
 				ft_execve(env, &token, cmd);
+			if(cmd != NULL)
+			{
+				free(cmd);
+				cmd = NULL;
+			}
 		}
-		if(cmd)
-			free(cmd);
-		while (token && (token->type == ARG || token->type == PIPE || token->type == GREAT
-		|| token->type == DOUBLE_GREAT || token->type == SEP))	
+		while (token && (token->type == PIPE  || token->type == ARG  || token->type == GREAT 
+		|| token->type == LESS || token->type == DOUBLE_GREAT || token->type == SEP))	
 			token = token->next;
     }
-	/*
-      // printf("Exit status was %d\n", es);
-		// waitpid(pid, &st, 0);
-
-		/////////cd////////
-			int fdcd;
-			char buff[128];
-			fdcd = open("cd" , O_RDONLY);
-			int n;
-			n = read(fdcd, buff, 128);
-			buff[n] = '\0';
-			chdir(buff);
-			close(fdcd);
-		/////////////////////
-		/////// exit ///////////
-		//int fdexit;
-		char buff2[3];
-		int fdcd2 = open("exit" , O_RDONLY);
-			//printf("%d\n",fdcd2);
-		int n2 = read(fdcd2, buff2, 3);
-		buff2[n2] = '\0';
-		//printf("|%d|\n",fdcd2);
-		if (!ft_strcmp(cmd, "exit"))
-			{
-				//n2 = open("exit" , O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
-				exit(0);
-			}==
-		close(fdcd2);
-		///////////////////
-		close(fd[1]);
-		fdd = fd[0];*/
-		
-	//}
 	return (1);
 }
 
@@ -445,7 +447,6 @@ void increment_shlvl(t_env *env)
 			shlvl = ft_substr(env->value, indexof(env->value, '=') + 1, ft_strlen(env->value));
 			shlvl = ft_itoa(ft_atoi(shlvl) + 1);
 			env->value = ft_strjoin(var, shlvl);
-			//printf("%s\n",env->value);
 			break ;
 		}
 		env = env->next;
@@ -466,8 +467,6 @@ int		main(int ac, char *argv[], char **env )
 	int stdi;
 	int stdo;
 
-	stdi = dup(0);
-	stdo = dup(1);
 	list = get_env(env,argv,ac);
 	increment_shlvl(list);
 	status = 1;
@@ -486,6 +485,8 @@ int		main(int ac, char *argv[], char **env )
 		get_next_line(0, &line);
 		if (line[0])
 		{
+			stdi = dup(0);
+			stdo = dup(1);
 			//puts("* * * * * ** * ** * * * * * * ** * * * ** * *");
 				if (!(first = check(first,line)))
 					break;
@@ -493,7 +494,7 @@ int		main(int ac, char *argv[], char **env )
 			ft_executor(first, list);
 			dup2(stdo, 1);
 			dup2(stdi, 0);
-			puts("\t\t(<=== execution quit without error ==>)\n\n");
+		//	puts("\t\t(<=== execution quit without error ==>)\n\n");
 			// free(first);
 			// free(line);
 			status++;
