@@ -1,14 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line_utils.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: amouhtal <amouhtal@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/11/19 13:52:16 by amouhtal          #+#    #+#             */
-/*   Updated: 2020/12/23 15:44:36 by amouhtal         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "includes/minishell.h"
 
@@ -40,8 +29,8 @@ char			*ft_substr(char const *s, unsigned int start, size_t len)
 	i = 0;
 	if (s == 0)
 		return (NULL);
-	if (start > len)
-		return (ft_strdup(""));
+	// if (start > len)
+	// 	return (ft_strdup(""));
 	ab = (char *)malloc((len + 1) * sizeof(char));
 	if (ab == NULL)
 		return (NULL);

@@ -1,39 +1,41 @@
 # include "../includes/minishell.h"
 
 
-int	ft_cd( t_env *env, t_node **token)
+int	ft_cd( t_env *env, t_minishell **minishell)
 {
-	char **oldpath;
+	char *oldpath;
 	char cwd[100];
 	char *path;
 	char **arg;
 
-	arg =  get_args(token);
-	//printf("%s\n",arg[0]);
-	oldpath = (char**)malloc(sizeof(char *) * 3);
-	oldpath[0] = ft_strdup("export");
+	arg =  get_args(minishell);
 	getcwd(cwd, sizeof(cwd));
-	oldpath[1] = ft_strjoin("OLDPWD=",cwd);
-	oldpath[2] = NULL;
-	//printf("here\n");
-	//ft_exp(env, token);
-	//printf("here2\n");
+	oldpath = ft_strjoin("OLDPWD=",cwd);
 	if (arg[0])
-		path = arg[0];
+		{
+			if (!ft_strcmp(arg[0], "-"))
+				{
+					printf("<== \n");
+					path = get_env_var(env, "OLDPWD", 1);
+					if (path[0] == '\0')
+						ft_putstr_fd("OLDPWD not set\n", STDERR);
+				}
+			else
+				path = arg[0];
+		}
 	else
 		path = get_env_var(env, "HOME", 1);
-	// printf("||||||||||||%s\n",arg[0]);
-
-	int fd;
-	//char buff[128];
-	fd = open("cd" , O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
-//	int n;
-
-	// while (n = read(fd, buff, 128))
-	// {
-		write(fd,path,ft_strlen(path));
-	//}
+	
 	if (chdir(path) != 0)
-		printf("chdir() to /usr failed\n"); 
+	{
+	
+		ft_putstr_fd("changing directory failed\n", STDERR);
+		(*minishell)->exit_status = 1;
+	}else
+	if (valid_arg(env, oldpath))
+		env = add_env(env, oldpath);
+
+	
+	(*minishell)->exit_status = 0;
 	return (1);
 }

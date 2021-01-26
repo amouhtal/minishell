@@ -1,5 +1,47 @@
 #include "includes/minishell.h"
 
+int     ft_strcmp(const char *s1, const char *s2)
+{
+    size_t i;
+    i = 0;
+    if ((!s1 || !s2))
+        return (1);
+    while ((s1[i] || s2[i]))
+    {
+        if (s1[i] != s2[i])
+            return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+        i++;
+    }
+    return (0);
+}
+int     indexof(char *str, char c)
+{
+    int i = 0;
+    while(str[i])
+    {
+        if(str[i] == c)
+            return i;
+        i++;
+    }
+    return(i);
+}
+
+int			skip_quots(char *str, char c, int i)
+{
+	int j;
+
+	j = i + 1;
+	while (str[j])
+	{
+		if(str[j] == c )
+		{
+			return(j);
+		}
+		j++;
+	}
+	return(j);
+}
+
 void	ft_putstr_fd(char *s, int fd)
 {
 	int i;
@@ -14,21 +56,6 @@ void	ft_putstr_fd(char *s, int fd)
 	}
 }
 
-int		ft_strcmp(const char *s1, const char *s2)
-{
-	size_t i;
-
-	i = 0;
-	if ((!s1 || !s2))
-		return (1);
-	while ((s1[i] || s2[i]))
-	{
-		if (s1[i] != s2[i])
-			return ((unsigned char)s1[i] - (unsigned char)s2[i]);
-		i++;
-	}
-	return (0);
-}
 
 static	int		checkset(char c, char *set)
 {
@@ -70,11 +97,12 @@ char			*ft_strtrim(char const *s1, char const *set)
 int	ft_isalpha(int c)
 {
 	if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+	{
 		return (1);
+	}
 	return (0);
 }
-
-int		tab_rows(t_node *token)
+int		tab_rows(t_token *token)
 {
 	int i;
 			
@@ -91,18 +119,18 @@ int		tab_rows(t_node *token)
 	return (i);
 }
 
-char	**get_args(t_node **token)
+char	**get_args(t_minishell **minishell)
 {
 	char **args;
 	int i;
 	int size;
-	size = tab_rows(*token);
+	size = tab_rows((*minishell)->token);
 	i = 0;
 	args = (char **)malloc(sizeof(char *) * (size + 1));
 	while (i < size)
 	{
-		args[i] = ft_strdup((*token)->str);
-		(*token) = (*token)->next;
+		args[i] = ft_strdup((*minishell)->token->str);
+		(*minishell)->token = (*minishell)->token->next;
 		i++;
 	}
 	args[i] = NULL;

@@ -28,12 +28,12 @@ int ft_unset_variable(t_env *env, char *arg_var)
 	return (0);
 }
 
-void ft_unset(t_env *env, t_node **token)
+void ft_unset(t_env *env, t_minishell **minishell)
 {
 	int i;
 	char **args;
 
-	args = get_args(token);
+	args = get_args(minishell);
 	i = 0;
 	while (args[i])
 	{

@@ -27,7 +27,7 @@ int		nb_args(char **args)
 // 	return (i);
 // }
 
-int				ft_echo(t_node **token)
+int				ft_echo(t_minishell **minishell)
 {
 	int		i;
 	int		n_option;
@@ -35,7 +35,7 @@ int				ft_echo(t_node **token)
 	char **args;
 
 	
-	args = get_args(token);
+	args = get_args(minishell);
 
 	i = 0;
 	n_option = 0;
@@ -54,5 +54,6 @@ int				ft_echo(t_node **token)
 	}
 	if (n_option == 0)
 		write(1, "\n", 1);
+	(*minishell)->exit_status = 0;
 	return (1);
 }

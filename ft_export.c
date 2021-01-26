@@ -1,18 +1,30 @@
 #include "includes/minishell.h"
 
-int 	indexof(char *str, char c)
+
+int ft_search_variable(t_env *env, char *arg)
 {
-	int i = 0;
+	char *tmp;
+	char *var;
+	char *arg_var;
 
-	while(str[i])
+	while (env->prev)
+		env = env->prev;
+	while (env)
 	{
-		if(str[i] == c)
-			return i;
-		i++;
-	}
-	return(i);
-}
+		arg_var = ft_substr(arg, 0, indexof(arg, '='));
+		var = ft_substr((char *)env->value, 0, indexof(env->value, '='));
+		if(!ft_strcmp(var, arg_var) && !ft_strcmp(arg , "="))
+		{
 
+			tmp = env->value;
+			env->value = (void *)ft_strdup(arg);
+			free(tmp);
+			return (1);
+		}
+		env = env->next;
+	}
+	return (0);
+}
 int valid_arg(t_env *env, char *arg)
 {
 	int i;
@@ -24,12 +36,16 @@ int valid_arg(t_env *env, char *arg)
 	//ft_putstr_fd(&arg[i], 1);
 	if (!ft_isalpha(arg[0]) && arg[0] != '_')
 	{
-		ft_putstr_fd("not a valid identifier\n", 2);
+		ft_putstr_fd("export: `", 2);
+		ft_putstr_fd(arg, 2);
+		ft_putstr_fd("': not a valid identifier\n", 2);
 		return (0);
 	}
 
 	if (ft_search_variable(env, arg))
-		return (0);
+		{
+			return (0);
+		}
 	return (1);
 }
 
@@ -38,6 +54,7 @@ char *get_env_var(t_env *env, char *variable, int value)
 	char *env_var;
 	char *ret;
 
+	ret = NULL;
 	while (env->prev)
 		env = env->prev;
 	while (env)
@@ -53,29 +70,7 @@ char *get_env_var(t_env *env, char *variable, int value)
 	return (ret);
 }
 
-int ft_search_variable(t_env *env, char *arg)
-{
-	char *tmp;
-	char *var;
-	char *arg_var;
 
-	while (env->prev)
-		env = env->prev;
-	while (env)
-	{
-		arg_var = ft_substr(arg, 0, indexof(arg, '='));
-		var = ft_substr((char *)env->value, 0, indexof(env->value, '='));
-		if(!ft_strcmp(var, arg_var))
-		{
-			tmp = env->value;
-			env->value = (void *)ft_strdup(arg);
-			free(tmp);
-			return (1);
-		}
-		env = env->next;
-	}
-	return (0);
-}
 
 char **sorted_table(t_env *env)
 {
@@ -125,13 +120,13 @@ char **sorted_table(t_env *env)
 	return ret;
 }
 
-void ft_exp(t_env **env, t_node **token)
+void ft_exp(t_env **env, t_minishell **minishell)
 {
 	int i;
 	char **exptab;
 	char **args;
 
-	args = get_args(token);
+	args = get_args(minishell);
 	exptab = sorted_table((*env));
 	i = 0;
 	if (!args[0])
@@ -146,10 +141,9 @@ void ft_exp(t_env **env, t_node **token)
 		while (args[i])
 		{
 			if (valid_arg((*env), args[i]))
-				{
-					puts(args[i]);
-					(*env) = add_env((*env), args[i]);
-				}
+			{
+				(*env) = add_env((*env), args[i]);
+			}
 			i++;
 		}
 	// int i;

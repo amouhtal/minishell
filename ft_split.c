@@ -3,90 +3,113 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: amouhtal <amouhtal@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mel-hamr <mel-hamr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/22 18:51:32 by amouhtal          #+#    #+#             */
-/*   Updated: 2020/12/23 15:44:24 by amouhtal         ###   ########.fr       */
+/*   Created: 2019/10/24 17:32:18 by mel-hamr          #+#    #+#             */
+/*   Updated: 2021/01/26 17:32:01 by mel-hamr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/minishell.h"
 
-static	int		countwords(char *ptr, char c)
+static	int			c_word(char *str, char c)
 {
-	int i;
-	int count;
+	int	i;
+	int	count;
 
-	i = 0;
+	i = -1;
 	count = 0;
-	while (ptr[i])
+	while (str[++i])
 	{
-		if (ptr[i] == c && ptr[i + 1] != c)
-			count++;
-		i++;
-	}
-	return (count + 1);
-}
-
-static	char	*affectation(char c, int *ii, char *ptr)
-{
-	int		k;
-	char	*p;
-	int		nn;
-
-	k = 0;
-	nn = 0;
-	while (ptr[*ii + nn] != c && ptr[*ii + nn])
-		nn++;
-	if (!(p = (char *)malloc(sizeof(char) * (nn + 1))))
-		return (NULL);
-	while (nn > k)
-	{
-		p[k] = ptr[k + *ii];
-		k++;
-	}
-	p[k] = '\0';
-	*ii = nn + *ii;
-	return (p);
-}
-
-static	void	free_news(char **news)
-{
-	int i;
-
-	i = 0;
-	while (news[i])
-	{
-		free(news[i]);
-		i++;
-	}
-}
-
-char			**ft_split(char const *s, char c)
-{
-	int		index;
-	char	**news;
-	int		i;
-	char	*ptr;
-
-	if ((ptr = ft_strtrim(s, &c)) == NULL)
-		return (0);
-	if (!(news = (char **)malloc(sizeof(char*) * (countwords(ptr, c) + 1))))
-		return (0);
-	i = 0;
-	index = -1;
-	while (ptr[i])
-	{
-		while (ptr[i] == c)
-			i++;
-		if ((news[++index] = affectation(c, &i, ptr)) == NULL)
+		if (str[i] == '\'' || str[i] == '"')
 		{
-			free_news(news);
-			free(ptr);
+			i = skip_quots(str, str[i],i);
+				//printf("|%c|",ptr[nn+1]);
+		}
+		if (str[i] == c && str[i + 1] != c)
+			count++;
+		if (str[i] != c && str[i + 1] == '\0')
+			count++;
+	}
+	return (count);
+}
+
+static	void		ft_free(char **tab, char *str)
+{
+	int	i;
+
+	i = 0;
+	while (tab[i])
+	{
+		free(tab[i]);
+		i++;
+	}
+	free(str);
+}
+
+static	char		*remplir(char *s, int *k, char c)
+{
+	int		i;
+	int		start;
+	int		end;
+	char	*str;
+	int startt;
+	i = *k;
+	while (s[i] == c)
+		i++;
+	start = i;
+	startt = i;
+	while (s[i] != c && s[i])
+	{
+		if (s[i] == '\'' || s[i] == '"')
+		{
+			i = skip_quots(s, s[i],i);
+				//printf("|%c|",ptr[nn+1]);
+		}
+		i++;
+	
+	}
+	end = i;
+	*k = i;
+	while(startt < end)
+	{
+		//printf("%c",s[startt]);
+		startt++;
+	}
+		//printf("|%d|",end -start);
+	str = ft_substr(s, start, (end - start ));
+	//printf("%s\n",str);
+	if (str == NULL)
+		return (NULL);
+	return (str);
+}
+
+char				**ft_split(char const *s, char c)
+{
+	char	*str;
+	char	**tab;
+	int		i;
+	int		j;
+	int		k;
+
+	if (s == NULL)
+		return (NULL);
+	i = -1;
+	str = ft_strtrim(s, &c);
+	if (str == NULL)
+		return (NULL);
+	j = c_word(str, c);
+	//printf("|%d|",j);
+	tab = (char **)malloc((j + 1) * sizeof(char*));
+	if (tab == NULL)
+		return (NULL);
+	k = 0;
+	while (++i < j)
+		if ((tab[i] = remplir(str, &k, c)) == NULL)
+		{
+			ft_free(tab, str);
 			return (0);
 		}
-	}
-	news[index + 1] = NULL;
-	free(ptr);
-	return (news);
+	tab[i] = 0;
+	return (tab);
 }

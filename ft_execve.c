@@ -50,25 +50,27 @@ char *if_arg_in_env(char **tab_env)
 char **exp_(t_env *ls)
 {
     char **tab;
+	t_env *tmp;
 	int cpt;
     int i;
+
 	while(ls->prev)
 		ls = ls->prev;
-
-		cpt = 0;
-	while (ls)
-		{
-			ls = ls->next;
-			cpt++;
-		}
-    tab= (char **)malloc((cpt + 1) * sizeof(char *));
+	tmp = ls;
+	cpt = 0;
+	while (tmp)
+	{
+		tmp = tmp->next;
+		cpt++;
+	}
+    tab = (char **)malloc((cpt + 1) * sizeof(char *));
     i = -1;
     while (ls)
     {
         tab[++i] = ft_strdup(ls->value);
         ls = ls->next;
     }
-    tab[++i] = NULL;
+    tab[i + 1] = NULL;
     return (tab);
 }
 
@@ -92,60 +94,22 @@ char **include_cmd(char **tab, char *cmd)
 	return (ret);
 }
 
-int ft_execve2(t_env *env, t_node **token,char *cmd)
+int ft_execve(t_env *env, t_minishell **minishell,char *cmd)
 {
-	int i;
-	char **args;
-	char *path;
-	char **tab;
-	char **envp;
-	int st;
-	pid_t pid2;
-
-	args = get_args(token);
-	args = include_cmd(args, cmd);
-	pid2 = fork();
-	if (pid2 == 0)
-	{
-		i = 0;
-		path = get_env_var(env, "PATH", 1);
-		tab = ft_split(path, ':');
-		tab = ft_join_cmd(tab, ft_strjoin("/", cmd));
-		envp = exp_(env);
-		if ((path = if_arg_in_env(tab)))
-		{
-			if (execve(path, args, envp) == -1)
-				printf("Could not execve");
-		}else if ((path = if_arg_in_env(&cmd )))
-		{
-			if (execve(path, args, envp) == -1)
-				printf("Could not execve");
-		}
-		exit(0);
-	}
-	else
-	{
-		waitpid(pid2,&st, 0);
-		return (1);
-	}
-	return (1);
-}
-
-int ft_execve(t_env *env, t_node **token,char *cmd)
-{
-	int i;
+	int i = 0;
 	char **args;
 	char *path;
 	char **tab;
 	char **envp;
 	// int st;
-	pid_t pid2;
-	
-	args = get_args(token);
-	// puts((*token)->str);
+	pid_t pid;
+
+	args = get_args(minishell);
+	while(args[i])
+		i++;
 	args = include_cmd(args, cmd);
-	pid2 = fork();
-	if (pid2 == 0)
+	pid = fork(); 
+	if (pid == 0)
 	{
 		i = 0;
 		path = get_env_var(env, "PATH", 1);
@@ -155,18 +119,24 @@ int ft_execve(t_env *env, t_node **token,char *cmd)
 		if ((path = if_arg_in_env(tab)))
 		{
 			if (execve(path, args, envp) == -1)
-				printf("Could not execve");
+				ft_putstr_fd("Could not execve", 3);
 		}
-		else if ((path = if_arg_in_env(&cmd )))
+		else if ((path = if_arg_in_env(&cmd)))
 		{
 			if (execve(path, args, envp) == -1)
-				printf("Could not execve");
+				ft_putstr_fd("Could not execve", 3);
 		}
 		exit(1);
 	}
 	else
 	{
-		wait(NULL);
+		waitpid(pid, &(*minishell)->status, 0);
+		if (WIFEXITED((*minishell)->status))
+		{
+			(*minishell)->exit_status = WEXITSTATUS((*minishell)->status);
+			return ((*minishell)->exit_status);
+			// printf("Exit status of the child was %d\n",  (*minishell)->exit_status);
+		}
 		return (1);
 	}
 	return (1);
