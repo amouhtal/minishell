@@ -125,8 +125,20 @@ int ft_execve(t_env *env, t_minishell **minishell,char *cmd)
 		{
 			if (execve(path, args, envp) == -1)
 				ft_putstr_fd("Could not execve", 3);
+		}else
+		{
+			if (!ft_strcmp("minishell", cmd))
+			{
+				increment_shlvl(env);
+			}else
+			{
+				ft_putstr_fd(cmd, 2);
+				ft_putstr_fd(": command not found\n",2);
+				exit(127);
+			}
+			
 		}
-		exit(1);
+		exit(0);
 	}
 	else
 	{

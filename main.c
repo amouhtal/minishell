@@ -117,14 +117,13 @@ int main(int argc, char **argv, char **env)
 			//printf_arg_cmd(minishell.token);
 			// printf("%s\n",mini.token->str);
 			// test(mini.token);
-			//  printf("%s\n",mini.token->str);
 			minishell.pid = malloc(sizeof(pid_t) * (minishell.nbrofpipe = count_pipe(minishell.token)));
 			minishell.current_pipe = 0;
 			ft_executor(&minishell, minishell.env);
+			printf("$? = %d\n",minishell.exit_status);
 			dup2(minishell.stdo, STDOUT);
 			dup2(minishell.stdi, STDIN);
 			free(minishell.token);
-			//free(minishell.token);
 		}
 	}
 	return 0;

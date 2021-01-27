@@ -15,14 +15,14 @@ int ft_exit(char *cmd, t_minishell **minishell)
 	{
 		if (arg[0])
 			exit_nbr = ft_atoi(arg[0]);
-		puts("  ////   \t  ////");
+		/*puts("  ////   \t  ////");
 		puts(" (°>°)   \t (°>°)");
 		puts("__| |__  \t__| |__");
 		puts("--   --  \t--   -- ");
 		puts(" ) | )   \t ) | )");
 		puts("( ( )    \t( ( )");
 		puts(" |||     \t |||");
-		puts(" > >     \t  > >");
+		puts(" > >     \t  > >");*/
 		exit(exit_nbr);
 	}
 	

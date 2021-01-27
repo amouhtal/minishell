@@ -85,44 +85,27 @@ int ft_bultins(char *cmd, t_minishell **minishell, t_env *env)
 {
 	int status;
 	int ret;
-	ret = 0;
+	ret = 1;
 	//	puts(cmd);		
 	if (!ft_strcmp(cmd, "echo"))
-	{
-		ret = 1;
 		ft_echo(minishell);
-	}
 	else if (!ft_strcmp(cmd, "cd"))
-	{
-		ret = 1;
 		ft_cd(env, minishell);
-	}
 	else if (!ft_strcmp(cmd, "pwd"))
-	{
-		ret = 1;
 		ft_pwd(minishell);
-	}
 	else if (!ft_strcmp(cmd, "exit"))
-	{
-		ret = 1;
 		status = ft_exit(cmd, minishell);
-	}
 	else if (!ft_strcmp(cmd, "env"))
-	{
-		ret = 1;
 		ft_env(env);
-	}
 	else if (!ft_strcmp(cmd, "export"))
-	{
-		ret = 1;
 		ft_exp(&env, minishell);
-	}
 	else if (!ft_strcmp(cmd, "unset"))
-	{
-		ret = 1;
 		ft_unset(env, minishell);
-	}
-	return ret;
+	
+	if (if_buitins(cmd))
+		return (1);
+	else
+		return (0);	
 }
 
 int if_great_next(t_token *token)
@@ -298,8 +281,8 @@ int ft_executor(t_minishell *minishell, t_env *env)
 	int fd[2];
 	int fdd;
 	char *cmd;
-	cmd = NULL;
 	int cpt = 0;
+	cmd = NULL;
 	while (minishell->token->prev)
 		minishell->token = minishell->token->prev;
 	while (minishell->token)
@@ -331,14 +314,14 @@ int ft_executor(t_minishell *minishell, t_env *env)
     }
 	// while(waitid(P_ALL, 0, NULL, WEXITED) != 0)
     // 	perror("waitid failed:");
-	while (cpt < minishell->nbrofpipe)
+	while (0 < minishell->nbrofpipe)
 	{
-		waitpid(minishell->pid[cpt], &minishell->status, 0);
-		cpt++;
+		waitpid(minishell->pid[minishell->nbrofpipe--], &minishell->status, 0);
+		if (WIFEXITED(minishell->status))
+			minishell->exit_status = WEXITSTATUS(minishell->status);
 	}
 	
-	// if (WIFEXITED(minishell->status))
-	// 	minishell->exit_status = WEXITSTATUS(minishell->status);
+	
 	//if (if_pipe_next(minishell->token) != PIPE)
 	return (1);
 }
@@ -352,7 +335,6 @@ void increment_shlvl(t_env *env)
 		env = env->prev;
 	while (env)
 	{
-		
 		var = ft_substr((char *)env->value, 0, indexof(env->value, '=') + 1);
 		if (!ft_strcmp(var, "SHLVL="))
 		{
