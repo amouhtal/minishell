@@ -48,6 +48,10 @@ typedef struct minishell
 	int		exit_status;
 	int stdi;
 	int stdo;
+	int	fd[2];
+	int fdd;
+	char *cmd;
+	int pipe;
 }           t_minishell;
 
 t_env *add_env(t_env *list, void *value);

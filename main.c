@@ -119,7 +119,7 @@ int main(int argc, char **argv, char **env)
 			minishell.pid = malloc(sizeof(pid_t) * (minishell.nbrofpipe = count_pipe(minishell.token)));
 			minishell.current_pipe = 0;
 			ft_executor(&minishell, minishell.env);
-			printf("$? = %d\n", minishell.exit_status);
+			// printf("$? = %d\n", minishell.exit_status);
 			dup2(minishell.stdo, STDOUT);
 			dup2(minishell.stdi, STDIN);
 			free(minishell.token);
