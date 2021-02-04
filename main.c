@@ -113,7 +113,7 @@ int main(int argc, char **argv, char **env)
 			//puts("here");
 			check_fir(&minishell, line);
 			check_sec(&minishell);
-			//printf_arg_cmd(minishell.token);
+			printf_arg_cmd(minishell.token);
 			// printf("%s\n",mini.token->str);
 			// test(mini.token);
 			minishell.pid = malloc(sizeof(pid_t) * (minishell.nbrofpipe = count_pipe(minishell.token)));

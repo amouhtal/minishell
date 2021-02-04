@@ -26,6 +26,26 @@ int count_pipe(t_token *token)
 	return ret;
 }
 
+int count_pipe2(t_token *token)
+{
+	int ret;
+	t_token *tmp;
+
+	tmp = token;
+	ret = 0;
+	while( token->prev)
+		token = token->prev;
+	while(token && token->type < 4)
+	{
+		//printf("%d\n",token->type);
+		if (token->type == PIPE)
+			ret++;
+		token = token->next;
+	}
+	token = tmp;
+	return ret;
+}
+
 char **ft_cmd()
 {
 	char **tab;
@@ -43,7 +63,7 @@ int if_pipe_prev(t_token *token)
 		token = token->prev;
 	if (token->prev && token->type == CMD)
 		token = token->prev;
-	while(token && (token->type != CMD || token->type != SEP))
+	while (token && (token->type != CMD || token->type != SEP))
 	{
 		if (token && token->type == PIPE)
 			return  PIPE;
@@ -166,6 +186,16 @@ void ft_piping(t_minishell *minishell, t_env *env)
 			// 	}
 			// }
 }
+void get_cmd(t_minishell *minishell)
+{
+	if (minishell->token && minishell->token->type == CMD)
+	{
+		minishell->cmd = NULL;
+		minishell->cmd = ft_strdup(minishell->token->str);
+		if (minishell->token->next)
+			minishell->token = minishell->token->next;
+	}
+}
 
 int redir_pipe(t_minishell *minishell, t_env *env, int *cpt)
 {
@@ -174,6 +204,11 @@ int redir_pipe(t_minishell *minishell, t_env *env, int *cpt)
 	//int stat;
 	//char buff[10];
 	t_token *tmp;
+
+
+
+
+	minishell->nbrofpipe2 = count_pipe2(minishell->token);
 	if (if_great_next(minishell->token))
 	{
 		close(df);
@@ -231,31 +266,101 @@ int redir_pipe(t_minishell *minishell, t_env *env, int *cpt)
 	}
 	if (minishell->token && (if_pipe_next(minishell->token) == PIPE || if_pipe_prev(minishell->token) == PIPE))
 	{
-		pipe(minishell->fd);
-		minishell->pid[*cpt] = fork();
-		if (minishell->pid[*cpt] == 0)
+		int commandc = 0;
+    	int pipefds[minishell->nbrofpipe2 * 2];
+		pid_t pid;
+		int i = 0;
+		int status;
+		// char *cmd1 = ft_strdup("ls");
+		// char *cmd2 = ft_strdup("tail");
+
+		while(i < minishell->nbrofpipe2)
 		{
-			ft_piping(minishell, env);
-			return 2;
+			if(pipe(pipefds + i * 2) < 0 )
+			{
+				exit(0);
+			}
+			i++;
 		}
-		else if (minishell->pid[minishell->current_pipe++] > 0)
+		int j = 0;
+		// puts(minishell->cmd);
+		// exit(0);
+		while(minishell->token && (if_pipe_next(minishell->token) == PIPE || if_pipe_prev(minishell->token) == PIPE))
 		{
-			// waitpid(minishell->pid[*cpt], &minishell->status, 0); // here
-			// printf("%d\n", WIFEXITED(minishell->status));
-			// if (WIFEXITED(minishell->status))
-			// {
-			// 	puts("ok");
-			// 	minishell->exit_status = WEXITSTATUS(minishell->status);
-			// 	//return (minishell->exit_status);
-			// }
-			while(minishell->token && minishell->token->type == ARG)
+			pid = fork();
+			if( pid == 0 )
+			{
+				if(if_pipe_next(minishell->token) == PIPE)
+				{
+	
+					if(dup2(pipefds[(j + 1)], 1) < 0)
+					{
+						exit(0);
+					}
+				}
+				if(j != 0)
+				{
+					if( dup2(pipefds[j - 2], 0) < 0 )
+					{
+							exit(0);
+					}
+				}
+				i = 0;
+				while(i < 2 * minishell->nbrofpipe2)
+				{
+					close(pipefds[i]);
+					i++;
+				}
+				if (!ft_bultins(minishell->cmd, &minishell, env))
+				{
+					ft_execve(env, &minishell, minishell->cmd);
+					// if(minishell->cmd != NULL)
+					// {
+					// 	free(minishell->cmd);
+					// 	minishell->cmd = NULL;
+					// }
+				}
+			}
+			else if( pid < 0)
+			{
+				exit(0);
+			}
+			j += 2;
+			puts("******");
+			if (j == 6)
+				exit(0);
+			//puts(minishell->cmd);
+			// if(minishell->token->next)
+			// 	{
+			// 		minishell->token = minishell->token->next;
+			// 		get_cmd(minishell);
+			// 	}
+			// 	puts(minishell->cmd);
+			while (minishell->token && (minishell->token->type == CMD || minishell->token->type == ARG))
+			{
 				minishell->token = minishell->token->next;
-			close(minishell->fd[1]);
-			minishell->fdd = minishell->fd[0];
-			return 1;
+			}
+			if (minishell->token->type == PIPE)
+				minishell->token = minishell->token->next;
+			puts(minishell->token->str);
+			get_cmd(minishell);
 		}
+			i = 0;
+			while(i < 2 * minishell->nbrofpipe2)
+			{
+				close(pipefds[i]);
+				i++;
+			}
+			i = 0;
+			while (i < minishell->nbrofpipe2 + 1)
+			{
+				wait(&status);
+				i++;
+			}
 	}
+	exit(0);
 	return 1;
+	//}
 }
 
 void next_run(t_minishell **minishell)
@@ -277,29 +382,24 @@ int ft_executor(t_minishell *minishell, t_env *env)
 {
 
 	int cpt = 0;
-	minishell->cmd = NULL;
 		minishell->fdd = 0;
 	while (minishell->token->prev)
 		minishell->token = minishell->token->prev;
 	while (minishell->token)
 	{
-		if (minishell->token && minishell->token->type == CMD)
-		{
-			minishell->cmd = ft_strdup(minishell->token->str);
-			if (minishell->token->next)
-				minishell->token = minishell->token->next;
-		}
+		get_cmd(minishell);
 		minishell->pipe = redir_pipe(minishell, env, &cpt);
 		cpt++;
 		if ((minishell->cmd && if_pipe_next(minishell->token) != PIPE &&  if_pipe_prev(minishell->token) != PIPE))
 		{
-			//puts("here");
+			// puts("here");
 			// if (minishell->token && if_pipe_prev(minishell->token) == PIPE)
 			// {
 			// 	close(fd[1]);
 			// 	dup2(fdd, STDIN);
 			// 	close(fdd);
 			// }
+			
 			if (!ft_bultins(minishell->cmd, &minishell, env))
 				ft_execve(env, &minishell, minishell->cmd);
 			if(minishell->cmd != NULL)

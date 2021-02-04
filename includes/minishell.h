@@ -42,6 +42,7 @@ typedef struct minishell
 	t_token *token;
 	pid_t	*pid;
 	int 	nbrofpipe;
+	int		nbrofpipe2;
 	int		current_pipe;
 	int     ret;
 	int		status;

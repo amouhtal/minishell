@@ -1,176 +1,87 @@
-1
-2
-3
-4
-5
-6
-7
-Makefile
-bultins
-dup.txt
-env.c
-env.o
-exit
-ft_atoi.c
-ft_atoi.o
-ft_env.c
-ft_env.o
-ft_execve.c
-ft_execve.o
-ft_exit.c
-ft_exit.o
-ft_export.c
-ft_export.o
-ft_redirecion.c
-ft_split.c
-ft_split.o
-ft_split_1.c
-ft_split_1.o
-ft_unset.c
-ft_unset.o
-get_next_line.c
-get_next_line.o
-get_next_line_utils.c
-get_next_line_utils.o
-includes
-main.c
-main.o
-main2.c
-minishell
-minishell.a
-minishell.c
-tricky.txt
-utils.c
-utils.o
-1
-2
-3
-4
-5
-6
-7
-Makefile
-bultins
-dup.txt
-env.c
-env.o
-exit
-ft_atoi.c
-ft_atoi.o
-ft_env.c
-ft_env.o
-ft_execve.c
-ft_execve.o
-ft_exit.c
-ft_exit.o
-ft_export.c
-ft_export.o
-ft_redirecion.c
-ft_split.c
-ft_split.o
-ft_split_1.c
-ft_split_1.o
-ft_unset.c
-ft_unset.o
-get_next_line.c
-get_next_line.o
-get_next_line_utils.c
-get_next_line_utils.o
-includes
-main.c
-main.o
-main2.c
-minishell
-minishell.a
-minishell.c
-tricky.txt
-utils.c
-utils.o
-1
-2
-3
-4
-5
-6
-7
-Makefile
-bultins
-dup.txt
-env.c
-env.o
-exit
-ft_atoi.c
-ft_atoi.o
-ft_env.c
-ft_env.o
-ft_execve.c
-ft_execve.o
-ft_exit.c
-ft_exit.o
-ft_export.c
-ft_export.o
-ft_redirecion.c
-ft_split.c
-ft_split.o
-ft_split_1.c
-ft_split_1.o
-ft_unset.c
-ft_unset.o
-get_next_line.c
-get_next_line.o
-get_next_line_utils.c
-get_next_line_utils.o
-includes
-main.c
-main.o
-main2.c
-minishell
-minishell.a
-minishell.c
-tricky.txt
-utils.c
-utils.o
-1
-2
-3
-4
-5
-6
-7
-Makefile
-bultins
-dup.txt
-env.c
-env.o
-exit
-ft_atoi.c
-ft_atoi.o
-ft_env.c
-ft_env.o
-ft_execve.c
-ft_execve.o
-ft_exit.c
-ft_exit.o
-ft_export.c
-ft_export.o
-ft_redirecion.c
-ft_split.c
-ft_split.o
-ft_split_1.c
-ft_split_1.o
-ft_unset.c
-ft_unset.o
-get_next_line.c
-get_next_line.o
-get_next_line_utils.c
-get_next_line_utils.o
-includes
-main.c
-main.o
-main2.c
-minishell
-minishell.a
-minishell.c
-tricky.txt
-utils.c
-utils.o
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include<sys/wait.h>
+#define nbrofpipes 3
+/*
+ * loop over commands by sharing
+ * pipes.
+ */
+ 
+static void pipeline(char ***cmd)
+{
+   
+    int pipefds[2 * nbrofpipes];
+    pid_t pid;
+    int i;
+    int status;
+
+    for( i = 0; i < nbrofpipes; i++ )
+    {
+        if( pipe(pipefds + i*2) < 0 )
+        {
+            exit(0);
+        }
+    }
+    
+    int j = 0;
+    while (*cmd != NULL)
+    {
+        pid = fork();
+        if( pid == 0 ){
+            /* child gets input from the previous command,
+                if it's not the first command */
+        if(*(cmd + 1) != NULL)
+        {
+            if(dup2(pipefds[(j + 1)], 1) < 0)
+            {
+                exit(0);
+            }
+        }
+            /* child outputs to next command, if it's not
+                the last command */
+        if(j != 0)
+        {
+            if( dup2(pipefds[j - 2], 0) < 0 )
+            {
+                    exit(0);
+            }
+        }
+        for(i = 0; i < 2* nbrofpipes; i++){
+                    close(pipefds[i]);
+            }
+
+        execvp((*cmd)[0], *cmd);
+       // perror and exit
+        }
+        else if( pid < 0 )
+        {
+            exit(0);
+        }
+        cmd++;
+        j += 2;
+    }
+     for(i = 0; i < 2 * nbrofpipes; i++){
+        close(pipefds[i]);
+    }
+
+    for(i = 0; i < nbrofpipes + 1; i++)
+        wait(&status);
+}
+
+/*
+ * Compute multi-pipeline based
+ * on a command list.
+ */
+int main(int argc, char *argv[])
+{
+	char *ls[] = {"cat", NULL};
+	char *rev[] = {"ls", NULL};
+	char *nl[] = {"nl", NULL};
+	char *cat[] = {"cat", "-e", NULL};
+	char **cmd[] = {ls, rev, nl, cat, NULL};
+
+	pipeline(cmd);
+
+	return (0);
+}
