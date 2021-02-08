@@ -98,39 +98,133 @@ int ft_execve(t_env *env, t_minishell **minishell,char *cmd)
 {
 	int i = 0;
 	char **args;
+	int j = -1;
 	char *path;
 	char **tab;
 	char **envp;
 	// int st;
 	pid_t pid;
+	// pid_t pid2;
 
 	args = get_args(minishell);
 	while(args[i])
 		i++;
 	args = include_cmd(args, cmd);
-	pid = fork(); 
-	if (pid == 0)
-	{
-		i = 0;
-		path = get_env_var(env, "PATH", 1);
-		tab = ft_split(path, ':');
-		tab = ft_join_cmd(tab, ft_strjoin("/", cmd));
-		envp = exp_(env);
+	i = 0;
+	path = get_env_var(env, "PATH", 1);
+	tab = ft_split(path, ':');
+	tab = ft_join_cmd(tab, ft_strjoin("/", cmd));
+	envp = exp_(env);
+	// pid = fork(); 
+	// if (pid == 0)
+	// {
 		if ((path = if_arg_in_env(tab)))
 		{
 			if (execve(path, args, envp) == -1)
 				ft_putstr_fd("Could not execve", 3);
+			// execve(path, args, envp);
+			// puts("\n\n\n\n\nhere");
 		}
 		else if ((path = if_arg_in_env(&cmd)))
 		{
 			if (execve(path, args, envp) == -1)
 				ft_putstr_fd("Could not execve", 3);
+			// puts("\n\n\n\n\nhere");
+			// execve(path, args, envp);
+		}else
+		{
+			if (!ft_strcmp("minishell", cmd))
+				increment_shlvl(env);
+			else
+			{
+				ft_putstr_fd(cmd, 2);
+				ft_putstr_fd(": command not found\n",2);
+				exit(127);
+			}
 		}
-		exit(1);
+	//	exit(0);
+	// }
+	// else
+	// {
+	// 	// if (!(*minishell)->nbrofpipe)
+	// 	waitpid(pid, &(*minishell)->status, 0);
+	// 	// else
+	// 	// {
+	// 	// 	while (++j < (*minishell)->nbrofpipe + 1)
+	// 	// 		waitpid((*minishell)->pid[j], &(*minishell)->status, 0);
+	// 	// }
+	// 	// wait(NULL);
+	// 	if (WIFEXITED((*minishell)->status))
+	// 	{
+	// 		(*minishell)->exit_status = WEXITSTATUS((*minishell)->status);
+	// 		return ((*minishell)->exit_status);
+	// 		// printf("Exit status of the child was %d\n",  (*minishell)->exit_status);
+	// 	}
+	// 	return (1);
+	// }
+	return (1);
+}
+
+int ft_execve_no_pipe(t_env *env, t_minishell **minishell,char *cmd)
+{
+	int i = 0;
+	char **args;
+	int j = -1;
+	char *path;
+	char **tab;
+	char **envp;
+	// int st;
+	pid_t pid;
+	// pid_t pid2;
+
+	args = get_args(minishell);
+	while(args[i])
+		i++;
+	args = include_cmd(args, cmd);
+	i = 0;
+	path = get_env_var(env, "PATH", 1);
+	tab = ft_split(path, ':');
+	tab = ft_join_cmd(tab, ft_strjoin("/", cmd));
+	envp = exp_(env);
+	pid = fork(); 
+	if (pid == 0)
+	{
+		if ((path = if_arg_in_env(tab)))
+		{
+			if (execve(path, args, envp) == -1)
+				ft_putstr_fd("Could not execve", 3);
+			// execve(path, args, envp);
+			// puts("\n\n\n\n\nhere");
+		}
+		else if ((path = if_arg_in_env(&cmd)))
+		{
+			if (execve(path, args, envp) == -1)
+				ft_putstr_fd("Could not execve", 3);
+			// puts("\n\n\n\n\nhere");
+			// execve(path, args, envp);
+		}else
+		{
+			if (!ft_strcmp("minishell", cmd))
+				increment_shlvl(env);
+			else
+			{
+				ft_putstr_fd(cmd, 2);
+				ft_putstr_fd(": command not found\n",2);
+				exit(127);
+			}
+		}
+	//	exit(0);
 	}
 	else
 	{
+		// if (!(*minishell)->nbrofpipe)
 		waitpid(pid, &(*minishell)->status, 0);
+		// else
+		// {
+		// 	while (++j < (*minishell)->nbrofpipe + 1)
+		// 		waitpid((*minishell)->pid[j], &(*minishell)->status, 0);
+		// }
+		// wait(NULL);
 		if (WIFEXITED((*minishell)->status))
 		{
 			(*minishell)->exit_status = WEXITSTATUS((*minishell)->status);

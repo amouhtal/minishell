@@ -9,11 +9,12 @@ int ft_search_variable(t_env *env, char *arg)
 
 	while (env->prev)
 		env = env->prev;
+	
 	while (env)
 	{
 		arg_var = ft_substr(arg, 0, indexof(arg, '='));
 		var = ft_substr((char *)env->value, 0, indexof(env->value, '='));
-		if(!ft_strcmp(var, arg_var) && !ft_strcmp(arg , "="))
+		if(!ft_strcmp(var, arg_var))
 		{
 
 			tmp = env->value;
@@ -41,11 +42,8 @@ int valid_arg(t_env *env, char *arg)
 		ft_putstr_fd("': not a valid identifier\n", 2);
 		return (0);
 	}
-
 	if (ft_search_variable(env, arg))
-		{
-			return (0);
-		}
+		return (0);
 	return (1);
 }
 
@@ -93,11 +91,11 @@ char **sorted_table(t_env *env)
 		env = env->prev;
 	while (env->next)
 	{
-		ret[j] = ft_strdup(env->value);
+		ret[j] = line_of_env(env->value);
 		env = env->next;
 		j++;
 	}
-	ret[j++] = ft_strdup(env->value);
+	ret[j++] = line_of_env(env->value);
 	ret[j] = NULL;
 	j = 0;
 	while (j < i)
@@ -140,6 +138,7 @@ void ft_exp(t_env **env, t_minishell **minishell)
 	else
 		while (args[i])
 		{
+			
 			if (valid_arg((*env), args[i]))
 			{
 				(*env) = add_env((*env), args[i]);

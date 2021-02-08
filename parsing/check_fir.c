@@ -66,7 +66,22 @@ char *fix_line(char *line)
 	fixed_line[j]='\0';
 	return(fixed_line);
 }
+void add_last_token(t_token *token)
+{
+	t_token *n_token;
 
+	while (token->next)
+	{
+		token= token->next;
+	}
+	
+	n_token =new_token();
+	n_token->type = SEP;
+	n_token->str = ft_strdup(";");
+	n_token->prev=token;
+	token->next = n_token;
+
+}
 void	check_fir(t_minishell *mini,char *line)
 {
 	int i;
@@ -116,5 +131,6 @@ void	check_fir(t_minishell *mini,char *line)
 		mini->token=add_arg_cmd(mini->token,tab[i]);
 		i++;
 	}
+	add_last_token(mini->token);
 	//return (0);
 }

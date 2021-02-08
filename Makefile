@@ -9,13 +9,13 @@ ft_exit.c ft_unset.c ft_export.c  ft_env.c ft_atoi.c bultins/ft_echo.c ft_execve
 
 OBJ = $(SRC:.c=.o)
 
-CFLAGS = -Wall -Wextra -Werror 
+#CFLAGS = -Wall -Wextra -Werror 
 
 all : $(NAME)
 
 $(NAME) : $(OBJ)
 	@ar rcs $(NAMA) $(OBJ)
-	@gcc $(CFLAGS) $(NAMA) -o $(NAME)
+	@gcc  $(NAMA) -o $(NAME)
 	@echo 'SUCCESS!' 
 clean :
 	@rm -rf $(OBJ)

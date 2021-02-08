@@ -21,6 +21,7 @@
 #define CMD 2
 #define SEP 5
 #define ARG 3
+#define END 8
 typedef struct token
 {
     int type;
@@ -42,12 +43,18 @@ typedef struct minishell
 	t_token *token;
 	pid_t	*pid;
 	int 	nbrofpipe;
+	int		nbrofpipe2;
 	int		current_pipe;
 	int     ret;
 	int		status;
 	int		exit_status;
 	int stdi;
 	int stdo;
+	int	fd[2];
+	int fdd;
+	char *cmd;
+	int pipe;
+	int prev_pipe;
 }           t_minishell;
 
 t_env *add_env(t_env *list, void *value);
@@ -95,4 +102,6 @@ int	ft_env(t_env *env);
 char	**get_args(t_minishell **minishell);
 char *get_env_var(t_env *env, char *variable, int value);
 int valid_arg(t_env *env, char *arg);
+int ft_execve_no_pipe(t_env *env, t_minishell **minishell,char *cmd);
+char			*line_of_env(const char *s1);
 # endif

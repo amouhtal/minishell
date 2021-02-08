@@ -1,4 +1,5 @@
 #include "includes/minishell.h"
+
 t_env *new_env(void *value)
 {
 	t_env *new;
@@ -24,6 +25,7 @@ t_env *add_env(t_env *list, void *value)
 		// puts("here\n");
 	return (list);
 }
+
 t_env *get_env(char **env,char **argv,int argc)
 {   
     t_env *list;

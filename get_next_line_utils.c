@@ -21,6 +21,35 @@ char			*ft_strdup(const char *s1)
 	return (str);
 }
 
+char			*line_of_env(const char *s1)
+{
+	int			i;
+	char		*str;
+	int			j;
+
+	j = 0;
+	i = 0;
+	while (s1[i])
+		i++;
+	if (!(str = (char*)malloc((i + 3) * sizeof(char))))
+		return (NULL);
+	i = 0;
+	while (s1[i])
+	{
+		str[j] = s1[i];
+		if (s1[i] == '=' && i == j)
+		{
+			j++;
+			str[j] = '"';
+		}
+		i++;
+		j++;
+	}
+	str[j++] = '"';
+	str[j] = '\0';
+	return (str);
+}
+
 char			*ft_substr(char const *s, unsigned int start, size_t len)
 {
 	char		*ab;

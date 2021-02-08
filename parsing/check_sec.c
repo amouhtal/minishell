@@ -208,8 +208,9 @@ void fix_token(t_token *token,int is_cmd)
 	if(is_cmd == 0)
 	{
 		token = next(token);
-		if(token->type == ARG)
-			token->type = CMD;
+		if(token->next != NULL)
+			if(token->type == ARG)
+				token->type = CMD;
 		
 	}	
 

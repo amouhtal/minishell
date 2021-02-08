@@ -10,6 +10,7 @@ void ft_cntr_c(int signum)
 void ft_cntr_d(int signum)
 {
 	ft_putstr_fd("\b\b", 1);
-	ft_putstr_fd("\033[1;32m$minishell$~> \033[0mQUIT\n", 1);
+	ft_putstr_fd("QUIT : 3\n", 1);
+	//exit(0);
 	signal(signum, ft_cntr_d);
 }
