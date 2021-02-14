@@ -1,7 +1,5 @@
 1
 bultins
-f1
-f2
 ft_atoi.c
 ft_atoi.o
 ft_env.c
@@ -34,10 +32,7 @@ minishell
 minishell.a
 minishell.c
 minishell.o
-output
 parsing
-pipe.c
-pipe.o
 redirections.c
 redirections.o
 tricky.txt

@@ -1,0 +1,6 @@
+	@ar rcs $(NAMA) $(OBJ)
+	@gcc  $(NAMA) -o $(NAME)
+	@echo 'SUCCESS!'
+	@rm -rf $(OBJ)
+	@rm -rf $(NAME)
+	@rm -rf $(NAMA)

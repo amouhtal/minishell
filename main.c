@@ -83,6 +83,7 @@ int main(int argc, char **argv, char **env)
 	minishell.env = get_env(env, argv, argc);
 	increment_shlvl(minishell.env);
 	status = 1;
+	sign.pid = -1;
 	signal(SIGINT, ft_cntr_c);
 	signal(SIGQUIT, ft_cntr_d);
 	//get_first(&list);
@@ -117,10 +118,10 @@ int main(int argc, char **argv, char **env)
 			// printf_arg_cmd(minishell.token);
 			// printf("%s\n",mini.token->str);
 			// test(mini.token);
-			minishell.pid = malloc(sizeof(pid_t) * (minishell.nbrofpipe = count_pipe(minishell.token)));
+			minishell.pid_list = malloc(sizeof(pid_t) * (minishell.nbrofpipe = count_pipe(minishell.token)));
 			minishell.current_pipe = 0;
 			ft_executor(&minishell, minishell.env);
-			// printf("$? = %d\n", minishell.exit_status);
+			// printf("$? = %d\n", sign.exit_status);
 			dup2(minishell.stdo, STDOUT);
 			dup2(minishell.stdi, STDIN);
 			free(minishell.token);

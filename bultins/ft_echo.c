@@ -40,7 +40,7 @@ int				ft_echo(t_minishell **minishell)
 	i = 0;
 	n_option = 0;
 	cpt = 0;
-	while (args[i] && ft_strcmp(args[i], "-n") == 0)
+	while (args[i] && ft_check_n(args[i], "-n") == 0)
 	{
 		n_option = 1;
 		i++;
@@ -54,6 +54,6 @@ int				ft_echo(t_minishell **minishell)
 	}
 	if (n_option == 0)
 		write(1, "\n", 1);
-	(*minishell)->exit_status = 0;
+	sign.exit_status = 0;
 	return (1);
 }
